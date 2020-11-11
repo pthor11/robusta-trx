@@ -1,5 +1,5 @@
 import { connectTronConsumer } from "./kafka/tron.kafka"
-import { connectCoinProducer } from "./kafka/coin.kafka"
+import { connectCoinProducer, connectCoinConsumer } from "./kafka/coin.kafka"
 import { connectRedis } from "./redis"
 
 const start = async () => {
@@ -7,8 +7,10 @@ const start = async () => {
         await connectRedis()
 
         await connectTronConsumer()
-        
+
         await connectCoinProducer()
+
+        await connectCoinConsumer()
     } catch (e) {
         throw e
     }

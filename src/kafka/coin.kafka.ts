@@ -59,5 +59,7 @@ const connectCoinProducer = async () => {
 
 export {
     coinProducer,
-    connectCoinProducer
+    coinConsumer,
+    connectCoinProducer,
+    connectCoinConsumer
 }
