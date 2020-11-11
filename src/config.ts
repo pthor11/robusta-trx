@@ -19,8 +19,8 @@ export const tronKafkaConfig = {
     topic: {
         consume: {
             // block: 'block',
-            transaction: 'transaction',
-            // contractevent: 'contractevent'
+            // transaction: 'transaction',
+            contractevent: 'contractevent'
         },
         produce: {}
     }

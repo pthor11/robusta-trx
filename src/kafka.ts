@@ -1,6 +1,7 @@
 import { EachMessagePayload, Kafka } from "kafkajs";
 import { tronKafkaConfig } from "./config";
 import { transactionConsumer } from "./service/transaction.consumer";
+import { contracteventConsumer } from "./service/contractevent.consumer";
 
 const tronKafka = new Kafka({
     clientId: tronKafkaConfig.clientId,
@@ -19,7 +20,7 @@ const connectTronConsumer = async () => {
 
             await tronConsumer.subscribe({ topic, fromBeginning: true })
 
-            console.log(`subcribed topic ${topic}`)
+            console.log(`subcribed topic: ${topic}`)
         }
 
         await tronConsumer.run({
@@ -28,8 +29,11 @@ const connectTronConsumer = async () => {
                     const { topic, message } = payload
 
                     switch (topic) {
-                        case tronKafkaConfig.topic.consume.transaction:
-                            await transactionConsumer(message)
+                        // case tronKafkaConfig.topic.consume.transaction:
+                        //     await transactionConsumer(message)
+                        //     break;
+                        case tronKafkaConfig.topic.consume.contractevent:
+                            await contracteventConsumer(message)
                             break;
 
                         default: throw new Error(`consumer for topic ${topic} not found`)

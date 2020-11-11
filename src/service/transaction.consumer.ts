@@ -3,7 +3,7 @@ import { getAsync } from "../redis";
 
 type TxRaw = {
     timeStamp: number,
-    triggerName: string,
+    triggerName: string, // 'transactionTrigger'
     transactionId: string,
     blockHash: string,
     blockNumber: number,
@@ -32,17 +32,17 @@ const transactionConsumer = async (_message: KafkaMessage) => {
     try {
         const data: TxRaw = JSON.parse(_message.value?.toString() || '')
 
-        const { fromAddress, toAddress, assetName, assetAmount } = data
+        const { triggerName, fromAddress, toAddress, assetName, assetAmount } = data
 
-        if (fromAddress && toAddress && assetName && assetAmount) {
+        if (triggerName === 'transactionTrigger' && fromAddress && toAddress && assetName && assetAmount) {
             const [foundSender, foundReceiver] = await Promise.all([
                 getAsync(`${data.fromAddress}.trc10.${data.assetName}`),
                 getAsync(`${data.toAddress}.trc10.${data.assetName}`),
             ])
 
-            if (foundSender) console.log({ fromAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash })
+            if (foundSender !== null) console.log({ fromAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash })
 
-            if (foundReceiver) console.log({ toAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash })
+            if (foundReceiver !== null) console.log({ toAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash })
         }
     } catch (e) {
         throw e
