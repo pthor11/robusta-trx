@@ -1,6 +1,9 @@
 import { KafkaMessage } from "kafkajs";
 import { coinProducer } from "../kafka/coin.kafka";
-import { getAsync } from "../redis";
+import { parseWatchAccount } from "../model/Account";
+import { Change } from "../model/Change";
+import { CurrencyType } from "../model/Currency";
+import { getKeys } from "../redis";
 
 type TxRaw = {
     timeStamp: number,
@@ -22,7 +25,7 @@ type TxRaw = {
     contractResult: string | null,
     fromAddress: string | null,
     toAddress: string | null,
-    assetName: string | null,
+    assetName: string | null, // 'trx' | id of trc10
     assetAmount: number,
     latestSolidifiedBlockNumber: number,
     internalTrananctionList: any[],
@@ -33,30 +36,65 @@ const transactionConsumer = async (_message: KafkaMessage) => {
     try {
         const data: TxRaw = JSON.parse(_message.value?.toString() || '')
 
-        const { triggerName, fromAddress, toAddress, assetName, assetAmount } = data
+        const { triggerName, transactionId, blockNumber, timeStamp, fromAddress, toAddress, assetName, assetAmount } = data
 
-        if (triggerName === 'transactionTrigger' && fromAddress && toAddress && assetName && assetAmount) {
-            const [foundSender, foundReceiver] = await Promise.all([
-                getAsync(`${fromAddress}.trc10.${assetName}`),
-                getAsync(`${toAddress}.trc10.${assetName}`),
+        if (triggerName === 'transactionTrigger' && fromAddress && toAddress && assetAmount) {
+            const [foundSenders, foundReceivers] = await Promise.all([
+                getKeys(assetName === 'trx' ? `*.${fromAddress}.trx` : `*.${fromAddress}.trc10.${assetName}`),
+                getKeys(assetName === 'trx' ? `*.${toAddress}.trx` : `*.${toAddress}.trc10.${assetName}`),
             ])
 
-            if (foundSender !== null) {
-                console.log({ fromAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash })
+            for (const _sender of foundSenders) {
+                const sender = parseWatchAccount(_sender)
+
+                console.log({ sender });
+
+                const change: Change = {
+                    address: sender.address,
+                    txid: transactionId,
+                    n: 0,
+                    value: String(assetAmount),
+                    currency: {
+                        type: assetName === CurrencyType.trx ? CurrencyType.trx : CurrencyType.trc10,
+                        address: assetName === CurrencyType.trx ? null : assetName!
+                    },
+                    blockNumber,
+                    timeStamp
+                }
+
+                console.log({ change })
+
                 const recordSender = await coinProducer.send({
-                    topic: `${fromAddress}.trc10.${assetName}`,
-                    messages: [{ value: JSON.stringify({ fromAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash }) }]
+                    topic: sender.apiKey,
+                    messages: [{ value: JSON.stringify(change) }]
                 })
 
                 console.log({ recordSender });
             }
 
-            if (foundReceiver !== null) {
-                console.log({ toAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash })
+            for (const _receiver of foundReceivers) {
+                const receiver = parseWatchAccount(_receiver)
+
+                console.log({ receiver });
+
+                const change: Change = {
+                    address: receiver.address,
+                    txid: transactionId,
+                    n: 0,
+                    value: String(-assetAmount),
+                    currency: {
+                        type: assetName === CurrencyType.trx ? CurrencyType.trx : CurrencyType.trc10,
+                        address: assetName === CurrencyType.trx ? null : assetName!
+                    },
+                    blockNumber,
+                    timeStamp
+                }
+
+                console.log({ change })
 
                 const recordReceiver = await coinProducer.send({
-                    topic: `${toAddress}.trc10.${assetName}`,
-                    messages: [{ value: JSON.stringify({ toAddress, assetName, assetAmount, txid: data.transactionId, blockNumber: data.blockNumber, blockHash: data.blockHash }) }]
+                    topic: receiver.apiKey,
+                    messages: [{ value: JSON.stringify(change) }]
                 })
 
                 console.log({ recordReceiver });

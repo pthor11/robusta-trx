@@ -27,15 +27,17 @@ export const tronKafkaConfig = {
 }
 
 if (!process.env.COIN_KAFKA_CLIENT_ID) throw new Error(`coin kafka client id must be provided`)
-// if (!process.env.COIN_KAFKA_GROUP_ID) throw new Error(`coin kafka group id must be provided`)
+if (!process.env.COIN_KAFKA_GROUP_ID) throw new Error(`coin kafka group id must be provided`)
 if (!process.env.COIN_KAFKA_BROKERS) throw new Error(`coin kafka brokers must be provided`)
 
 export const coinKafkaConfig = {
     clientId: process.env.COIN_KAFKA_CLIENT_ID,
-    // groupId: process.env.COIN_KAFKA_GROUP_ID,
+    groupId: process.env.COIN_KAFKA_GROUP_ID,
     brokers: process.env.COIN_KAFKA_BROKERS,
     topic: {
-        consume: {},
+        consume: {
+            watch: 'watch'
+        },
         produce: {} // not here cause using dynamic key is subscribe address. e.g: TEkGGEkzLb9PBUjE6ScdzSCYWGhn3M1g2M.trc20.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t; TAUN6FwrnwwmaEqYcckffC7wYmbaS6cBiX.trc10.trx
     }
 }
