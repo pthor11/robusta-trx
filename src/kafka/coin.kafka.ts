@@ -1,6 +1,6 @@
 import { EachMessagePayload, Kafka } from "kafkajs";
 import { coinKafkaConfig } from "../config";
-import { watchConsumer } from "../service/watch.consumer";
+import { trxConsumer } from "../service/trx.consumer";
 
 
 const coinKafka = new Kafka({
@@ -30,8 +30,8 @@ const connectCoinConsumer = async () => {
                     const { topic, message } = payload
 
                     switch (topic) {
-                        case coinKafkaConfig.topic.consume.watch:
-                            await watchConsumer(message)
+                        case coinKafkaConfig.topic.consume.trx:
+                            await trxConsumer(message)
                             break;
 
                         default: throw new Error(`consumer for topic ${topic} not found`)

@@ -4,7 +4,7 @@ import { CurrencyType, CurrencyTypes } from "../model/Currency";
 import { setAsync } from "../redis";
 
 
-const watchConsumer = async (_message: KafkaMessage) => {
+const trxConsumer = async (_message: KafkaMessage) => {
     try {
         const data: WatchAccount = JSON.parse(_message.value?.toString() || '')
 
@@ -31,4 +31,4 @@ const watchConsumer = async (_message: KafkaMessage) => {
     }
 }
 
-export { watchConsumer }
+export { trxConsumer }
