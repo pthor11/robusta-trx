@@ -40,8 +40,8 @@ const transactionConsumer = async (_message: KafkaMessage) => {
 
         if (triggerName === 'transactionTrigger' && fromAddress && toAddress && assetAmount) {
             const [foundSenders, foundReceivers] = await Promise.all([
-                getKeys(assetName === 'trx' ? `*.${fromAddress}.trx` : `*.${fromAddress}.trc10.${assetName}`),
-                getKeys(assetName === 'trx' ? `*.${toAddress}.trx` : `*.${toAddress}.trc10.${assetName}`),
+                getKeys(assetName === 'trx' ? `*.${fromAddress}.trx*` : `*.${fromAddress}.trc10.${assetName}`),
+                getKeys(assetName === 'trx' ? `*.${toAddress}.trx*` : `*.${toAddress}.trc10.${assetName}`),
             ])
 
             for (const _sender of foundSenders) {

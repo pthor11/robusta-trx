@@ -6,9 +6,9 @@ const start = async () => {
     try {
         await connectRedis()
 
-        await connectTronConsumer()
-
         await connectCoinProducer()
+
+        await connectTronConsumer()
 
         await connectCoinConsumer()
     } catch (e) {
