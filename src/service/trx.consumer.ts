@@ -1,14 +1,12 @@
 import { KafkaMessage } from "kafkajs";
 import { stringifyWatchAccount, WatchAccount } from "../model/Account";
 import { CurrencyType, CurrencyTypes } from "../model/Currency";
-import { setAsync } from "../redis";
+import { delAsync, setAsync } from "../redis";
 
 
 const trxConsumer = async (_message: KafkaMessage) => {
     try {
-        const data: WatchAccount = JSON.parse(_message.value?.toString() || '')
-
-        const { apiKey, address, currency } = data
+        const { apiKey, address, currency, watch } = JSON.parse(_message.value?.toString() || '')
 
         if (!apiKey) throw new Error(`watch consumer: api key must be provided`)
 
@@ -21,11 +19,15 @@ const trxConsumer = async (_message: KafkaMessage) => {
 
         // check currency.address valid for currency type. example: address checksum for trc20, number for trc10 v..v..
 
-        const account = stringifyWatchAccount(data)
+        const account = stringifyWatchAccount({ apiKey, address, currency })
 
-        await setAsync(account, '')
-
-        console.log(`account ${account} inserted`);
+        if (watch === true) {
+            await setAsync(account, '')
+            console.log(`account ${account} inserted`);
+        } else {
+            await delAsync([account])
+            console.log(`account ${account} removed`);
+        }
     } catch (e) {
         throw e
     }
