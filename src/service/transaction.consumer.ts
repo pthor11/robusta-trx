@@ -53,7 +53,7 @@ const transactionConsumer = async (_message: KafkaMessage) => {
                     address: sender.address,
                     txid: transactionId,
                     n: 0,
-                    value: String(assetAmount),
+                    value: String(-assetAmount),
                     currency: {
                         type: assetName === CurrencyType.trx ? CurrencyType.trx : CurrencyType.trc10,
                         address: assetName === CurrencyType.trx ? null : assetName!
@@ -81,7 +81,7 @@ const transactionConsumer = async (_message: KafkaMessage) => {
                     address: receiver.address,
                     txid: transactionId,
                     n: 0,
-                    value: String(-assetAmount),
+                    value: String(assetAmount),
                     currency: {
                         type: assetName === CurrencyType.trx ? CurrencyType.trx : CurrencyType.trc10,
                         address: assetName === CurrencyType.trx ? null : assetName!

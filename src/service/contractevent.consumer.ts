@@ -58,7 +58,7 @@ const contracteventConsumer = async (_message: KafkaMessage) => {
                     address: sender.address,
                     txid: transactionId,
                     n: 0,
-                    value,
+                    value: `-${value}`,
                     currency: {
                         type: CurrencyType.trc20,
                         address: contractAddress
@@ -86,7 +86,7 @@ const contracteventConsumer = async (_message: KafkaMessage) => {
                     address: receiver.address,
                     txid: transactionId,
                     n: 0,
-                    value: `-${value}`,
+                    value,
                     currency: {
                         type: CurrencyType.trc20,
                         address: contractAddress
